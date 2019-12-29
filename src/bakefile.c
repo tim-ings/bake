@@ -14,6 +14,18 @@ BakeFile* BakeFile_new() {
     return bake;
 }
 
+void BakeFile_free(BakeFile self) {
+    for (int i = 0; i < self.variables_len; i++) {
+        Variable_free(self.variables[i]);
+    }
+    free(self.variables);
+
+    for (int i = 0; i < self.targets_len; i++) {
+        Target_free(self.targets[i]);
+    }
+    free(self.targets);
+}
+
 char* BakeFile_getVar(BakeFile* self, char* name) {
     // check for special cases
     if (strcmp(name, "PID") == 0) {

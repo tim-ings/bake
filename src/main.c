@@ -12,7 +12,6 @@
 #define false 0
 
 regex_t re_variable;
-regex_t re_varexpansion;
 regex_t re_target;
 regex_t re_action;
 
@@ -80,5 +79,10 @@ int main(int argc, char** argv) {
     // run the bakefile
     
     // free resources and exit
+    BakeFile_free(*bake);
+    free(bake);
+    regfree(&re_variable);
+    regfree(&re_target);
+    regfree(&re_action);
     return EXIT_SUCCESS;
 }
