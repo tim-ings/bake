@@ -1,0 +1,5 @@
+MIDDLE=this is in the middle
+MIDDLE=actually i am in the middle
+A=1
+A=2
+MYVAR=this is before $(MIDDLE) and this is after
