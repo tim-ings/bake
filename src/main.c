@@ -39,9 +39,14 @@ void parseFile(String* file_path, BakeFile* outBake) {
         // check for variables
         matches = String_match(line_str, &re_variable, 3);
         if (matches != NULL) {
-            String* name = ((ReMatch*)List_get(matches, 1))->match;
-            String* value = ((ReMatch*)List_get(matches, 2))->match;
+            String* name = String_copy(((ReMatch*)List_get(matches, 1))->match);
+            String* value = String_copy(((ReMatch*)List_get(matches, 2))->match);
             BakeFile_setVar(outBake, name, value);
+
+            for (int i = 0; i < matches->length; i++) {
+                ReMatch_free(List_get(matches, i));
+            }
+            List_free(matches);
             continue;
         }
 
@@ -51,9 +56,14 @@ void parseFile(String* file_path, BakeFile* outBake) {
             // we have found a new target so add the old one to our bakefile
             if (current_target != NULL) BakeFile_addTarget(outBake, current_target);
             // make a new target
-            String* name = ((ReMatch*)List_get(matches, 1))->match;
+            String* name = String_copy(((ReMatch*)List_get(matches, 1))->match);
             name = BakeFile_varExpand(outBake, name);
             current_target = Target_new(name, List_new());
+
+            for (int i = 0; i < matches->length; i++) {
+                ReMatch_free(List_get(matches, i));
+            }
+            List_free(matches);
             continue;
         }
 
@@ -63,18 +73,23 @@ void parseFile(String* file_path, BakeFile* outBake) {
             // we have found a new target so add the old one to our bakefile
             if (current_target != NULL) BakeFile_addTarget(outBake, current_target);
             // make a new target
-            String* name = ((ReMatch*)List_get(matches, 1))->match;
+            String* name = String_copy(((ReMatch*)List_get(matches, 1))->match);
             name = BakeFile_varExpand(outBake, name);
-            String* deps_str = ((ReMatch*)List_get(matches, 2))->match;
+            String* deps_str = String_copy(((ReMatch*)List_get(matches, 2))->match);
             List* deps = String_split(deps_str, ' ');
             current_target = Target_new(name, deps);
+            
+            for (int i = 0; i < matches->length; i++) {
+                ReMatch_free(List_get(matches, i));
+            }
+            List_free(matches);
             continue;
         }
 
         // check for actions
         matches = String_match(line_str, &re_action, 2);
         if (matches != NULL) {
-            String* command = ((ReMatch*)List_get(matches, 1))->match;
+            String* command = String_copy(((ReMatch*)List_get(matches, 1))->match);
             char mod = 0;
             switch (command->str[0])
             {
@@ -84,6 +99,12 @@ void parseFile(String* file_path, BakeFile* outBake) {
             command = BakeFile_varExpand(outBake, command);
             Action* action = Action_new(mod, command);
             Target_addAction(current_target, action);
+            
+            for (int i = 0; i < matches->length; i++) {
+                ReMatch_free(List_get(matches, i));
+            }
+            List_free(matches);
+            continue;
         }
     }
 

@@ -21,8 +21,11 @@ struct ReMatch {
     int end;
 } typedef ReMatch;
 
+void ReMatch_free(ReMatch* self);
+
 String* String_new(char* str);
 void String_free(String* self);
+String* String_copy(String* self);
 String* String_from_int(int i);
 String* String_from_float(float f);
 int String_len(String* self);

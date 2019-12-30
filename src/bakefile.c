@@ -107,8 +107,14 @@ String* BakeFile_varExpand(BakeFile* self, String* str) {
         String* val = BakeFile_getVar(self, match->match);
         String* expanded = String_concat(String_concat(before, val), after);
         expanded->str[expanded->length] = '\0';
+
+        for (int i = 0; i < matches->length; i++) {
+            ReMatch_free(List_get(matches, i));
+        }
+        List_free(matches);
         return BakeFile_varExpand(self, expanded);
     }
+    
     return str;
 }
 

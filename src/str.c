@@ -1,6 +1,11 @@
 #include "str.h"
 
 
+void ReMatch_free(ReMatch* self) {
+    String_free(self->match);
+    free(self);
+}
+
 String* String_new(char* str) {
     String* s = malloc(sizeof(String));
     s->str = str;
@@ -11,6 +16,10 @@ String* String_new(char* str) {
 void String_free(String* self){
     free(self->str);
     free(self);
+}
+
+String* String_copy(String* self) {
+    return String_new(strdup(self->str));
 }
 
 String* String_from_int(int i) {
