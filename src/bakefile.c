@@ -1,13 +1,118 @@
 #include "bakefile.h"
 
 
-BakeFile* BakeFile_new() {
+BakeFile* BakeFile_new(char* file_path) {
     BakeFile* bake = malloc(sizeof(BakeFile));
     bake->variables = List_new();
     bake->targets = List_new();
 
-    // set up regex here as static var causes segfaults
+    // set up regex here var causes segfaults
     regcomp(&re_varexpansion, "\\$\\(([^\\(\\) \t]+)\\)", REG_EXTENDED);
+    regcomp(&re_variable, "^([^= \t]+)[ \t]*=[ \t]*(.+)*$", REG_EXTENDED);
+    regcomp(&re_target_nodep, "^([^: \t ]+)[ \t]*:[ \t]*$", REG_EXTENDED);
+    regcomp(&re_target_dep, "^([^: \t ]+)[ \t]*:[ \t]*(.+)$", REG_EXTENDED);
+    regcomp(&re_action, "^[\t](.+)$", REG_EXTENDED);
+
+    // parse the bakefile
+    // open the file
+    if (file_path == NULL)
+        file_path = "bakefile";
+    FILE* fp = fopen(file_path, "r");
+    if (fp == NULL) {
+        printf("Failed to open file: %s\n", file_path);
+        exit(EXIT_FAILURE);
+    }
+
+    // read the file line by line
+    char* line = NULL;
+    String* line_str = String_new("");
+    ssize_t read;
+    size_t len = 0;
+    Target* current_target;
+    while ((read = getline(&line, &len, fp)) != EOF) {
+        strtok(line, "\n"); // strip new line
+        if (line[0] == '#') continue; // ignore comments
+        line_str->str = line; // set up String object with new line
+
+        List* matches = NULL;
+
+        // check for variables
+        matches = String_match(line_str, &re_variable, 3);
+        if (matches != NULL) {
+            String* name = String_copy(((ReMatch*)List_get(matches, 1))->match);
+            String* value = String_copy(((ReMatch*)List_get(matches, 2))->match);
+            BakeFile_setVar(bake, name, value);
+
+            for (int i = 0; i < matches->length; i++)
+                ReMatch_free(List_get(matches, i));
+            List_free(matches);
+            continue;
+        }
+
+        // check for targets with no dependencies
+        matches = String_match(line_str, &re_target_nodep, 2);
+        if (matches != NULL) {
+            // we have found a new target so add the old one to our bakefile
+            if (current_target != NULL) BakeFile_addTarget(bake, current_target);
+            // make a new target
+            String* name = String_copy(((ReMatch*)List_get(matches, 1))->match);
+            name = BakeFile_varExpand(bake, name);
+            current_target = Target_new(name, List_new());
+
+            for (int i = 0; i < matches->length; i++)
+                ReMatch_free(List_get(matches, i));
+            List_free(matches);
+            continue;
+        }
+
+        // check for targets with dependencies
+        matches = String_match(line_str, &re_target_dep, 3);
+        if (matches != NULL) {
+            // we have found a new target so add the old one to our bakefile
+            if (current_target != NULL) BakeFile_addTarget(bake, current_target);
+            // make a new target
+            String* name = String_copy(((ReMatch*)List_get(matches, 1))->match);
+            name = BakeFile_varExpand(bake, name);
+            String* deps_str = String_copy(((ReMatch*)List_get(matches, 2))->match);
+            List* deps = String_split(deps_str, ' ');
+            current_target = Target_new(name, deps);
+            
+            for (int i = 0; i < matches->length; i++)
+                ReMatch_free(List_get(matches, i));
+            List_free(matches);
+            continue;
+        }
+
+        // check for actions
+        matches = String_match(line_str, &re_action, 2);
+        if (matches != NULL) {
+            String* command = String_copy(((ReMatch*)List_get(matches, 1))->match);
+            char mod = 0;
+            switch (command->str[0])
+            {
+                case '@': mod = '@'; break;
+                case '-': mod = '-'; break;
+            }
+            command = BakeFile_varExpand(bake, command);
+            Action* action = Action_new(mod, command);
+            Target_addAction(current_target, action);
+            
+            for (int i = 0; i < matches->length; i++)
+                ReMatch_free(List_get(matches, i));
+            List_free(matches);
+            continue;
+        }
+    }
+
+    // add our final target to the bakefile
+    if (current_target != NULL) {
+        BakeFile_addTarget(bake, current_target);
+    }
+
+    // free memory
+    fclose(fp);
+    if (line)
+        free(line);
 
     return bake;
 }
@@ -108,9 +213,8 @@ String* BakeFile_varExpand(BakeFile* self, String* str) {
         String* expanded = String_concat(String_concat(before, val), after);
         expanded->str[expanded->length] = '\0';
 
-        for (int i = 0; i < matches->length; i++) {
+        for (int i = 0; i < matches->length; i++)
             ReMatch_free(List_get(matches, i));
-        }
         List_free(matches);
         return BakeFile_varExpand(self, expanded);
     }

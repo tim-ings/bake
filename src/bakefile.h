@@ -13,6 +13,10 @@
 
 
 regex_t re_varexpansion;
+regex_t re_variable;
+regex_t re_target_nodep;
+regex_t re_target_dep;
+regex_t re_action;
 
 struct BakeFile
 {
@@ -20,7 +24,7 @@ struct BakeFile
     List* targets;
 } typedef BakeFile;
 
-BakeFile* BakeFile_new();
+BakeFile* BakeFile_new(char* file_path);
 void BakeFile_free(BakeFile* self);
 String* BakeFile_getVar(BakeFile* self, String* name);
 void BakeFile_setVar(BakeFile* self, String* name, String* value);

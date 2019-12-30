@@ -14,7 +14,8 @@ String* String_new(char* str) {
 }
 
 void String_free(String* self){
-    free(self->str);
+    if (self->str != NULL)
+        free(self->str);
     free(self);
 }
 
