@@ -31,7 +31,7 @@ void parseFile(char* filePath, BakeFile* outBake) {
     ssize_t read;
     size_t len = 0;
     Target* current_target;
-    while ((read = getline(&line, &len, fp)) != -1) {
+    while ((read = getline(&line, &len, fp)) != EOF) {
         strtok(line, "\n"); // strip new line
         printf("PARSING \"%s\"\n", line);
         // try parse as a variable definition
@@ -46,8 +46,9 @@ void parseFile(char* filePath, BakeFile* outBake) {
             printf("\tSET \"%s\" to \"%s\"\n", name, value);
             continue;
         }
+        // try parse as a target
         if (regexec(&re_target, line, numMatches, matches, 0) != REG_NOMATCH) {
-            
+            printf("Found a target: \"%s\"\n", line);
         }
     }
 

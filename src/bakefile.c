@@ -110,6 +110,7 @@ void BakeFile_print(BakeFile* self) {
 char* BakeFile_varExpand(BakeFile* self, char** strp) {
     // find the next var to expand
     char* str = *strp;
+    size_t str_len = strlen(str);
     size_t numMatches = 2;
     regmatch_t matches[numMatches];
     if (regexec(&re_varexpansion, str, numMatches, matches, 0) != REG_NOMATCH) {
@@ -126,7 +127,6 @@ char* BakeFile_varExpand(BakeFile* self, char** strp) {
         strncpy(before, str, before_len);
 
         // get the string after the expansion
-        size_t str_len = strlen(str);
         size_t after_len = str_len - matches[1].rm_eo - 1; // take 1 for ")" char
         char* after = malloc(sizeof(char) * after_len);
         strncpy(after, &str[matches[1].rm_eo + 1], after_len);
@@ -144,6 +144,7 @@ char* BakeFile_varExpand(BakeFile* self, char** strp) {
         strncpy(&str[before_len], val, val_len);
         strncpy(&str[before_len + val_len], after, after_len);
         strncpy(&str[before_len + val_len + after_len], "\0", 1); // terminate the string
+
         // clean up
         free(after);
         free(before);
