@@ -37,3 +37,57 @@ void Target_addAction(Target* self, Action* action) {
     // add our new action
     self->actions[self->actions_len - 1] = *action;
 }
+
+bool Target_isOutDated(Target* self, Target* others, int others_len) {
+    // If there are no dependencies, then the target requires rebuilding
+    if (self->dependecies_len == 0) return true;
+
+    // If any dependency does not exist, or has been modified more recently 
+    // than its target, then the target requires rebuilding
+
+    // check every dependency
+    for (int di = 0; di < self->dependecies_len; di++) {
+        char* dep = self->dependecies[di];
+        
+        // check if the dependency is another target
+        for (int ti = 0; ti < others_len; ti++) {
+            Target* othertar = &others[ti];
+            if (strcmp(dep, othertar->name) == 0) {
+                // if the dependency is outdated this target is outdated
+                if (Target_isOutDated(othertar, others, others_len)) return true;
+            }
+        }
+
+        // check if the dependency is a file
+        struct stat depstats;
+        struct stat tarstats;
+        stat(dep, &depstats);
+        stat(self->name, &tarstats);
+        printf("File (tar) \"%s\" was last modifed at: %ld\n", self->name, tarstats.st_mtime);
+        printf("File (dep) \"%s\" was last modifed at: %ld\n", dep, depstats.st_mtime);
+        if (depstats.st_mtime > tarstats.st_mtime) {
+            printf("Dep \"%s\" has been modififed, we need to rebuild \"%s\"\n", dep, self->name);
+            return true;
+        }
+        printf("Checking if \"%s\" exists\n", dep);
+        if (access(dep, F_OK) == -1) {
+            printf("Dep \"%s\" does not exist, we need to rebuild \"%s\"\n", dep, self->name);
+            return true;
+        }
+        printf("Checking if \"%s\" exists\n", self->name);
+        if (access(self->name, F_OK) == -1) {
+            printf("Target \"%s\" does not exist, we need to rebuild \"%s\"\n", self->name, self->name);
+            return true;
+        }
+
+        printf("Dep \"%s\" is not out dated!\n", dep);
+    }
+
+
+    return false;
+}
+
+int Target_build(Target* self) {
+    printf("Building \"%s\"", self->name);
+    return 0;
+}

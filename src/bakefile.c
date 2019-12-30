@@ -174,3 +174,14 @@ void BakeFile_addTarget(BakeFile* self, Target* target) {
     // add our new target
     self->targets[self->targets_len - 1] = *target;
 }
+
+void BakeFile_run(BakeFile* bake) {
+    // rebuild dated targets
+    for (int ti = 0; ti < bake->targets_len; ti++) {
+        Target* t = &bake->targets[ti];
+        printf("Checking target: %s\n", t->name);
+        if (Target_isOutDated(t, bake->targets, bake->targets_len)) {
+            Target_build(t);
+        }
+    }
+}

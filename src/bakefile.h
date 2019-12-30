@@ -28,5 +28,6 @@ void BakeFile_setVar(BakeFile* self, char* name, char* value);
 void BakeFile_print(BakeFile* self);
 char* BakeFile_varExpand(BakeFile* self, char** strp);
 void BakeFile_addTarget(BakeFile* self, Target* target);
+void BakeFile_run(BakeFile* bake);
 
 #endif

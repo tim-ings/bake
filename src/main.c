@@ -6,10 +6,8 @@
 #include "action.h"
 #include "variable.h"
 #include "bakefile.h"
+#include "bool.h"
 
-#define bool char
-#define true 1
-#define false 0
 
 regex_t re_variable;
 regex_t re_target_nodep;
@@ -90,7 +88,6 @@ void parseFile(char* filePath, BakeFile* outBake) {
         }
         // try parse as action
         if (regexec(&re_action, line, numMatches, matches, 0) != REG_NOMATCH) {
-            printf("Found an action: %s\n", line);
             char* command;
             char mod = 0;
             if (line[1] == '@' || line[1] == '-') {
@@ -103,7 +100,6 @@ void parseFile(char* filePath, BakeFile* outBake) {
             }
             command = BakeFile_varExpand(outBake, &command);
             Action* action = Action_new(mod, command);
-            printf("Adding an action with mod: %c, and command: %s\n", action->modifier, action->command);
             Target_addAction(current_target, action);
         }
     }
@@ -140,6 +136,7 @@ int main(int argc, char** argv) {
     BakeFile_print(bake);
 
     // run the bakefile
+    BakeFile_run(bake);
     
     // free resources and exit
     BakeFile_free(*bake);
