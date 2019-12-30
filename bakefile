@@ -1,18 +1,7 @@
-C99 = cc -std=c99 -Wall -pedantic -Werror
-OUT = try.out
+CC = gcc
+CARGS = -std=c99 -Wall -pendantic -Werror
 IN = try.c
-whydoesthisonebreak:
-try.out: try.c
-	$(C99) -o $(OUT) $(IN)
+OUT = try.out
+
 build:
-	$(C99) -o $(OUT) $(IN)
-clean:
-	-rm $(OUT)
-test: build
-	echo "No tests1"
-	echo "No tests2"
-	echo "No tests3"
-	echo "No tests4"
-	echo "No tests5"
-run: test build
-	./$(OUT)
+	$(CC) $(CARGS) -o $(OUT) $(IN)

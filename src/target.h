@@ -13,17 +13,15 @@
 
 struct Target
 {
-    char* name;
-    char** dependecies;
-    size_t dependecies_len;
-    Action* actions;
-    size_t actions_len;
+    String* name;
+    List* dependecies;
+    List* actions;
 } typedef Target;
 
-Target* Target_new(char* name, char** deps, size_t deps_len);
-void Target_free(Target self);
+Target* Target_new(String* name, List* deps);
+void Target_free(Target* self);
 void Target_addAction(Target* self, Action* action);
-bool Target_isOutDated(Target* self, Target* others, int others_len);
-int Target_build(Target* self);
+// bool Target_isOutDated(Target* self, Target* others, int others_len);
+// int Target_build(Target* self);
 
 #endif

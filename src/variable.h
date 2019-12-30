@@ -3,13 +3,16 @@
 
 #include <stdlib.h>
 
+#include "str.h"
+
 
 struct Variable
 {
-    char* name;
-    char* value;
+    String* name;
+    String* value;
 } typedef Variable;
 
-void Variable_free(Variable self);
+Variable* Variable_new(String* name, String* value);
+void Variable_free(Variable* self);
 
 #endif

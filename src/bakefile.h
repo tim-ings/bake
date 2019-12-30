@@ -9,24 +9,23 @@
 
 #include "variable.h"
 #include "target.h"
+#include "string.h"
 
 
 regex_t re_varexpansion;
 
 struct BakeFile
 {
-    Variable* variables;
-    size_t variables_len;
-    Target* targets;
-    size_t targets_len;
+    List* variables;
+    List* targets;
 } typedef BakeFile;
 
 BakeFile* BakeFile_new();
-void BakeFile_free(BakeFile self);
-char* BakeFile_getVar(BakeFile* self, char* name);
-void BakeFile_setVar(BakeFile* self, char* name, char* value);
+void BakeFile_free(BakeFile* self);
+String* BakeFile_getVar(BakeFile* self, String* name);
+void BakeFile_setVar(BakeFile* self, String* name, String* value);
 void BakeFile_print(BakeFile* self);
-char* BakeFile_varExpand(BakeFile* self, char** strp);
+String* BakeFile_varExpand(BakeFile* self, String* str);
 void BakeFile_addTarget(BakeFile* self, Target* target);
 void BakeFile_run(BakeFile* bake);
 
