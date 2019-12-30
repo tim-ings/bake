@@ -127,6 +127,13 @@ void BakeFile_free(BakeFile* self) {
         Target_free(List_get(self->targets, i));
     }
     List_free(self->targets);
+
+    regfree(&re_varexpansion);
+    regfree(&re_variable);
+    regfree(&re_target_nodep);
+    regfree(&re_target_dep);
+    regfree(&re_action);
+
     free(self);
 }
 

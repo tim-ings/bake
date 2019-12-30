@@ -20,9 +20,5 @@ int main(int argc, char** argv) {
     
     // free resources and exit
     BakeFile_free(bake);
-    regfree(&re_variable);
-    regfree(&re_target_nodep);
-    regfree(&re_target_dep);
-    regfree(&re_action);
     return EXIT_SUCCESS;
 }
