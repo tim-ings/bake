@@ -1,15 +1,12 @@
-MIDDLE=this is in the middle
-MIDDLE=actually i am in the middle
-A=1
-A=2
-MYVAR=this is before $(MIDDLE) and this is after
-
-ONE = 1
-TWO = 2
-THREE = 3
-FOUR = 4
-
-LIST = $(ONE), $(TWO), $(THREE), $(FOUR), $(PID), $(PPID), $(PWD)
+C99 = cc -std=c99 -Wall -pedantic -Werror
+OUT = try.out
+IN = try.c
 
 build:
-    echo hello!
+	@$(C99) -o $(OUT) $(IN)
+clean:
+	-rm $(OUT)
+test: build
+	echo "No tests"
+run: test build
+	./$(OUT)

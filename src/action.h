@@ -9,6 +9,7 @@ struct Action
     char* command;
 } typedef Action;
 
+Action* Action_new(char mod, char* command);
 void Action_free(Action self);
 
 #endif

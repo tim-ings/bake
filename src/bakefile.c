@@ -99,11 +99,17 @@ void BakeFile_print(BakeFile* self) {
         Variable* v = &self->variables[i];
         printf("\t%s = \"%s\"\n", v->name, v->value);
     }
-    printf("Targets:\n\tNYI\n");
+    printf("Targets:\n");
     for (int i = 0; i < self->targets_len; i++) {
-        // TODO: after impl targets
-        //Target* t = &self->targets[i];
-        //printf("\t%s = \"%s\"\n", t->name, t->value);
+        Target* t = &self->targets[i];
+        printf("\t%s:", t->name);
+        for (int di = 0; di < t->dependecies_len; di++) {
+            printf("\t %s", t->dependecies[di]);
+        }
+        printf("\n");
+        for (int ai = 0; ai < t->actions_len; ai++) {
+            printf("\t\t[%c]\t%s\n", t->actions[ai].modifier, t->actions[ai].command);
+        }
     }
 }
 
@@ -154,4 +160,17 @@ char* BakeFile_varExpand(BakeFile* self, char** strp) {
     } else {
         return str; // base case when no matches are found
     }
+}
+
+void BakeFile_addTarget(BakeFile* self, Target* target) {
+    self->targets_len++;
+    Target* targets = realloc(self->targets, sizeof(Target) * self->targets_len);
+    if (!targets) {
+        fprintf(stderr, "FATAL: Realloc failed in BakeFile_addTarget\n");
+        exit(EXIT_FAILURE);
+    }
+    self->targets = targets; // update the pointer after realloc
+
+    // add our new target
+    self->targets[self->targets_len - 1] = *target;
 }

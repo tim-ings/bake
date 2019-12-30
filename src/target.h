@@ -1,8 +1,10 @@
 #ifndef H_TARGET
 #define H_TARGET
 
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "action.h"
-#include "stdlib.h"
 
 
 struct Target
@@ -14,6 +16,8 @@ struct Target
     size_t actions_len;
 } typedef Target;
 
+Target* Target_new(char* name, char** deps, size_t deps_len);
 void Target_free(Target self);
+void Target_addAction(Target* self, Action* action);
 
 #endif

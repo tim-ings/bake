@@ -22,10 +22,11 @@ struct BakeFile
 } typedef BakeFile;
 
 BakeFile* BakeFile_new();
+void BakeFile_free(BakeFile self);
 char* BakeFile_getVar(BakeFile* self, char* name);
 void BakeFile_setVar(BakeFile* self, char* name, char* value);
 void BakeFile_print(BakeFile* self);
 char* BakeFile_varExpand(BakeFile* self, char** strp);
-void BakeFile_free(BakeFile self);
+void BakeFile_addTarget(BakeFile* self, Target* target);
 
 #endif
