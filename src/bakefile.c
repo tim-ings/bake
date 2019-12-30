@@ -28,7 +28,7 @@ BakeFile* BakeFile_new(char* file_path) {
     String* line_str = String_new("");
     ssize_t read;
     size_t len = 0;
-    Target* current_target;
+    Target* current_target = NULL;
     while ((read = getline(&line, &len, fp)) != EOF) {
         strtok(line, "\n"); // strip new line
         if (line[0] == '#') continue; // ignore comments
@@ -86,7 +86,7 @@ BakeFile* BakeFile_new(char* file_path) {
         // check for actions
         matches = String_match(line_str, &re_action, 2);
         if (matches != NULL) {
-            String* command = String_copy(((ReMatch*)List_get(matches, 1))->match);
+            String* command = ((ReMatch*)List_get(matches, 1))->match;
             char mod = 0;
             switch (command->str[0])
             {
@@ -111,8 +111,7 @@ BakeFile* BakeFile_new(char* file_path) {
 
     // free memory
     fclose(fp);
-    if (line)
-        free(line);
+    String_free(line_str);
 
     return bake;
 }
@@ -212,18 +211,21 @@ void BakeFile_print(BakeFile* self) {
 
 String* BakeFile_varExpand(BakeFile* self, String* str) {
     List* matches = String_match(str, &re_varexpansion, 2);
-    if (matches != NULL) {
+    while (matches != NULL) {
         ReMatch* match = List_get(matches, 1);
         String* before = String_slice(str, 0, match->start - 2);
         String* after = String_slice(str, match->end + 1, str->length);
         String* val = BakeFile_getVar(self, match->match);
-        String* expanded = String_concat(String_concat(before, val), after);
-        expanded->str[expanded->length] = '\0';
+        String* before_val = String_concat(before, val);
+        str = String_concat(before_val, after);
 
+        String_free(before_val);
+        String_free(before);
+        String_free(after);
         for (int i = 0; i < matches->length; i++)
             ReMatch_free(List_get(matches, i));
         List_free(matches);
-        return BakeFile_varExpand(self, expanded);
+        matches = String_match(str, &re_varexpansion, 2);
     }
     
     return str;
