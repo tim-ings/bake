@@ -7,15 +7,6 @@ BakeFile* BakeFile_new(char* file_path) {
     bake->targets = List_new();
     bake->default_target = NULL;
 
-    if (!re_compiled) {
-        regcomp(&re_varexpansion, "\\$\\(([^\\(\\) \t]+)\\)", REG_EXTENDED);
-        regcomp(&re_variable, "^([^= \t]+)[ \t]*=[ \t]*(.+)*$", REG_EXTENDED);
-        regcomp(&re_target_nodep, "^([^: \t ]+)[ \t]*:[ \t]*$", REG_EXTENDED);
-        regcomp(&re_target_dep, "^([^: \t ]+)[ \t]*:[ \t]*(.+)$", REG_EXTENDED);
-        regcomp(&re_action, "^[\t](.+)$", REG_EXTENDED);
-        re_compiled = true;
-    }
-
     // parse the bakefile
     // open the file
     if (file_path == NULL)

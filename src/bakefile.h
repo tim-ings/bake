@@ -11,14 +11,8 @@
 #include "target.h"
 #include "str.h"
 #include "bool.h"
+#include "re_global.h"
 
-
-static regex_t re_varexpansion;
-static regex_t re_variable;
-static regex_t re_target_nodep;
-static regex_t re_target_dep;
-static regex_t re_action;
-static bool re_compiled = false;
 
 struct BakeFile
 {

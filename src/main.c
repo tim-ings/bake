@@ -10,6 +10,7 @@
 #include "bool.h"
 #include "str.h"
 #include "clargs.h"
+#include "re_global.h"
 
 
 bool parse_args(int argc, char** argv) {
@@ -71,7 +72,9 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
+    // init curl and regexes
     curl_global_init(CURL_GLOBAL_DEFAULT);
+    re_global_comp();
 
     if (clargs.directory != NULL)
         chdir(clargs.directory);
@@ -88,7 +91,9 @@ int main(int argc, char** argv) {
         target = String_new(clargs.target);
     BakeFile_run(bake, target);
     
+    // free resources
     curl_global_cleanup();
+    re_global_free();
     BakeFile_free(bake);
     return EXIT_SUCCESS;
 }

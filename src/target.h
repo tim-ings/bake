@@ -12,6 +12,8 @@
 #include "action.h"
 #include "bool.h"
 #include "clargs.h"
+#include "re_global.h"
+
 
 struct Target
 {
@@ -19,9 +21,6 @@ struct Target
     List* dependecies;
     List* actions;
 } typedef Target;
-
-static regex_t re_url;
-static bool re_url_compiled = false;
 
 Target* Target_new(String* name, List* deps);
 void Target_free(Target* self);

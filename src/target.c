@@ -2,11 +2,6 @@
 
 
 Target* Target_new(String* name, List* deps) {
-    if (!re_url_compiled) {
-        regcomp(&re_url, "^(https://)|(https://)|(file:///)", REG_EXTENDED);
-        re_url_compiled = true;
-    }
-
     Target* t = malloc(sizeof(Target));
     t->name = name;
     t->dependecies = deps;
