@@ -1,4 +1,4 @@
 default: build
 
 build:
-	gcc -std=c99 -Werror -Wall -pedantic src/*.c -lcurl -o bake
+	gcc -g -fsanitize=address -std=c99 -Werror -Wall -pedantic src/*.c -lcurl -o bake

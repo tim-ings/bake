@@ -33,8 +33,8 @@ BakeFile* BakeFile_new(char* file_path) {
         // check for variables
         matches = String_match(line_str, &re_variable, 3);
         if (matches != NULL) {
-            String* name = String_copy(((ReMatch*)List_get(matches, 1))->match);
-            String* value = String_copy(((ReMatch*)List_get(matches, 2))->match);
+            String* name = ((ReMatch*)List_get(matches, 1))->match;
+            String* value = ((ReMatch*)List_get(matches, 2))->match;
             BakeFile_setVar(bake, name, value);
 
             for (int i = 0; i < matches->length; i++)
@@ -65,11 +65,12 @@ BakeFile* BakeFile_new(char* file_path) {
             // we have found a new target so add the old one to our bakefile
             if (current_target != NULL) BakeFile_addTarget(bake, current_target);
             // make a new target
-            String* name = String_copy(((ReMatch*)List_get(matches, 1))->match);
+            String* name = ((ReMatch*)List_get(matches, 1))->match;
             name = BakeFile_varExpand(bake, name);
-            String* deps_str = String_copy(((ReMatch*)List_get(matches, 2))->match);
-            deps_str = BakeFile_varExpand(bake, deps_str);
-            List* deps = String_split(deps_str, " \t\r\n\v\f");
+            String* deps_str = ((ReMatch*)List_get(matches, 2))->match;
+            String* deps_str_exp = BakeFile_varExpand(bake, deps_str);
+            List* deps = String_split(deps_str_exp, " \t\r\n\v\f");
+            String_free(deps_str_exp);
             current_target = Target_new(name, deps);
             
             for (int i = 0; i < matches->length; i++)
@@ -93,8 +94,9 @@ BakeFile* BakeFile_new(char* file_path) {
                 String_free(mod_command);
             }
 
-            command = BakeFile_varExpand(bake, command);
-            Action* action = Action_new(mod, command);
+            String* expanded_cmd = BakeFile_varExpand(bake, command);
+            String_free(command);
+            Action* action = Action_new(mod, expanded_cmd);
             Target_addAction(current_target, action);
             
             for (int i = 0; i < matches->length; i++)
@@ -127,12 +129,6 @@ void BakeFile_free(BakeFile* self) {
     }
     List_free(self->targets);
 
-    regfree(&re_varexpansion);
-    regfree(&re_variable);
-    regfree(&re_target_nodep);
-    regfree(&re_target_dep);
-    regfree(&re_action);
-
     free(self);
 }
 
@@ -156,7 +152,7 @@ String* BakeFile_getVar(BakeFile* self, String* name) {
     // try find and the var in our var list
     Variable* var = List_find(self->variables, Variable_eq, name);
     if (var != NULL)
-        return var->value;
+        return String_copy(var->value);
 
     // if we didnt find it try find in env
     char* val = getenv(name->str);
@@ -175,6 +171,7 @@ void BakeFile_setVar(BakeFile* self, String* name, String* value) {
     // try updating an existing variable
     Variable* existing = List_find(self->variables, Variable_eq, name);
     if (existing != NULL) {
+        String_free(existing->value);
         existing->value = value;
         return;
     }
@@ -207,24 +204,27 @@ void BakeFile_print(BakeFile* self) {
 }
 
 String* BakeFile_varExpand(BakeFile* self, String* str) {
-    List* matches = String_match(str, &re_varexpansion, 2);
+    String* new_str = String_copy(str);
+    List* matches = String_match(new_str, &re_varexpansion, 2);
     while (matches != NULL) {
         ReMatch* match = List_get(matches, 1);
-        String* before = String_slice(str, 0, match->start - 2);
-        String* after = String_slice(str, match->end + 1, str->length);
+        String* before = String_slice(new_str, 0, match->start - 2);
+        String* after = String_slice(new_str, match->end + 1, new_str->length);
         String* val = BakeFile_getVar(self, match->match);
         String* before_val = String_concat(before, val);
-        str = String_concat(before_val, after);
+        String_free(new_str);
+        new_str = String_concat(before_val, after);
 
         String_free(before_val);
         String_free(before);
+        String_free(val);
         String_free(after);
         for (int i = 0; i < matches->length; i++)
             ReMatch_free(List_get(matches, i));
-        matches = String_match(str, &re_varexpansion, 2);
+        List_free(matches);
+        matches = String_match(new_str, &re_varexpansion, 2);
     }
-    
-    return str;
+    return new_str;
 }
 
 void BakeFile_addTarget(BakeFile* self, Target* target) {
