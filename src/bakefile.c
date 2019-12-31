@@ -87,12 +87,18 @@ BakeFile* BakeFile_new(char* file_path) {
         // check for actions
         matches = String_match(line_str, &re_action, 2);
         if (matches != NULL) {
-            String* command = String_copy(((ReMatch*)List_get(matches, 1))->match);
+            String* mod_command = String_copy(((ReMatch*)List_get(matches, 1))->match);
             char mod = 0;
-            switch (command->str[0]) {
+            switch (mod_command->str[0]) {
                 case '@': mod = '@'; break;
                 case '-': mod = '-'; break;
             }
+            String* command = mod_command;
+            if (mod != 0) { // remove modifier from the command
+                command = String_slice(mod_command, 1, mod_command->length);
+                String_free(mod_command);
+            }
+
             command = BakeFile_varExpand(bake, command);
             Action* action = Action_new(mod, command);
             Target_addAction(current_target, action);
