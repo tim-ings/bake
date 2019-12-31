@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 
 #include "str.h"
+#include "clargs.h"
 
 #define DEFAULT_SHELL "/bin/bash"
 

@@ -47,8 +47,11 @@ bool Target_isOutDated(Target* self, List* others) {
         
         // check if the dependency is another target
         Target* other = List_find(others, Target_eq, dep);
-        if (other != NULL && Target_isOutDated(other, others))
+        if (other != NULL && Target_isOutDated(other, others)) {
+            // build the outdated dependency
+            Target_build(other);
             return true;
+        }
 
         // check if the target file exists
         if (access(self->name->str, F_OK) == -1)
@@ -74,9 +77,13 @@ int Target_build(Target* self) {
     // run all actions for this target
     for (int ai = 0; ai < self->actions->length; ai++) {
         Action* act = List_get(self->actions, ai);
-        int res = Action_exec(act);
-        if (res != 0)
-            return res; // stop executing actions if one fails (non-zero)
+        if (!clargs.silent && act->modifier != '@') // supress output with '@'
+            printf("%s\n", act->command->str);
+        if (!clargs.dry_run) {
+            int res = Action_exec(act);
+            if (res != 0)
+                return res; // stop executing actions if one fails (non-zero)
+        }
     }
     return 0;
 }

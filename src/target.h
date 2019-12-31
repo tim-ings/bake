@@ -10,6 +10,7 @@
 
 #include "action.h"
 #include "bool.h"
+#include "clargs.h"
 
 struct Target
 {

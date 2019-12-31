@@ -5,6 +5,7 @@ BakeFile* BakeFile_new(char* file_path) {
     BakeFile* bake = malloc(sizeof(BakeFile));
     bake->variables = List_new();
     bake->targets = List_new();
+    bake->default_target = NULL;
 
     // set up regex here var causes segfaults
     regcomp(&re_varexpansion, "\\$\\(([^\\(\\) \t]+)\\)", REG_EXTENDED);
@@ -234,19 +235,26 @@ String* BakeFile_varExpand(BakeFile* self, String* str) {
 }
 
 void BakeFile_addTarget(BakeFile* self, Target* target) {
+    // make the first target our default
+    if (self->targets->length == 0)
+        self->default_target = target->name;
     List_add(self->targets, target);
 }
 
-void BakeFile_run(BakeFile* self) {
+void BakeFile_run(BakeFile* self, String* target) {
     // rebuild out dated targets
-    for (int ti = 0; ti < self->targets->length; ti++) {
-        Target* t = List_get(self->targets, ti);
-        if (Target_isOutDated(t, self->targets)) {
-            int res = Target_build(t);
-            if (res != 0) {
+    if (target == NULL)
+        target = self->default_target;
+    Target* t = List_find(self->targets, Target_eq, target);
+    if (t == NULL) {
+        printf("bake: *** No rule to make target \"%s\".  Stop.\n", target->str);
+        exit(EXIT_FAILURE);
+    }
+    if (Target_isOutDated(t, self->targets)) {
+        int res = Target_build(t);
+        if (res != 0) {
+            if (!clargs.silent) 
                 printf("bake: *** [%s] Error %d\n", t->name->str, res);
-                return;
-            }
         }
     }
 }

@@ -8,22 +8,14 @@
 #include "bakefile.h"
 #include "bool.h"
 #include "str.h"
+#include "clargs.h"
 
 
-struct CLARGS {
-    char* directory;
-    char* filename;
-    bool ignore_failed_actions;
-    bool dry_run;
-    bool print_bakefile;
-    bool silent;
-} typedef CLARGS;
-
-CLARGS parse_args(int argc, char** argv) {
-    CLARGS clargs;
+bool parse_args(int argc, char** argv) {
     // defaults
     clargs.directory = NULL;
     clargs.filename = NULL;
+    clargs.target = NULL;
     clargs.ignore_failed_actions = false;
     clargs.dry_run = false;
     clargs.print_bakefile = false;
@@ -43,26 +35,55 @@ CLARGS parse_args(int argc, char** argv) {
             clargs.print_bakefile = true;
         } else if (strcmp(v, "-s") == 0) {
             clargs.silent = true;
+        } else if (strcmp(v, "-h") == 0) {
+            return false;
+        } else if (strcmp(v, "--help") == 0) {
+            return false;
+        } else if (strcmp(v, "-?") == 0) {
+            return false;
+        } else if (strcmp(v, "--usage") == 0) {
+            return false;
+        } else if (i != 0) {
+            clargs.target = argv[i];
         }
     }
-    return clargs;
+    return true;
+}
+
+void print_usage() {
+    printf("Usage:\n");
+    printf("\tbake [-C dirname] [-f filename] [-i] [-n] [-p] [-s] [targetname]\n");
+    printf("\tArguments:\n");
+    printf("\t\ttargetname\tSpecify the default target. Defaults to the first target\n");
+    printf("\tOptions:\n");
+    printf("\t\t-C dirname\tSpecify directory to run bake from\n");
+    printf("\t\t-f filename\tSpecify bakefile. Relative to -C dirname\n");
+    printf("\t\t-i\t\tContinue even if actions fail\n");
+    printf("\t\t-n\t\tPerform a dry run. Print actions to stdout but do not perform them\n");
+    printf("\t\t-p\t\tPrint parsed bakefile\n");
+    printf("\t\t-s\t\tSilently execute. Do not print any actions to stdout\n");
 }
 
 int main(int argc, char** argv) {
-    CLARGS clargs = parse_args(argc, argv);
-
-    if (clargs.directory != NULL) {
-        chdir(clargs.directory);
+    if (!parse_args(argc, argv)) {
+        print_usage();
+        exit(EXIT_FAILURE);
     }
 
-    BakeFile* bake = BakeFile_new(NULL);
+    if (clargs.directory != NULL)
+        chdir(clargs.directory);
+
+    BakeFile* bake = BakeFile_new(clargs.filename);
 
     if (clargs.print_bakefile) {
         BakeFile_print(bake);
         exit(EXIT_SUCCESS);
     }
 
-    BakeFile_run(bake);
+    String* target = NULL;
+    if (clargs.target != NULL)
+        target = String_new(clargs.target);
+    BakeFile_run(bake, target);
     
     BakeFile_free(bake);
     return EXIT_SUCCESS;

@@ -9,7 +9,8 @@
 
 #include "variable.h"
 #include "target.h"
-#include "string.h"
+#include "str.h"
+#include "bool.h"
 
 
 regex_t re_varexpansion;
@@ -22,6 +23,7 @@ struct BakeFile
 {
     List* variables;
     List* targets;
+    String* default_target;
 } typedef BakeFile;
 
 BakeFile* BakeFile_new(char* file_path);
@@ -31,6 +33,6 @@ void BakeFile_setVar(BakeFile* self, String* name, String* value);
 void BakeFile_print(BakeFile* self);
 String* BakeFile_varExpand(BakeFile* self, String* str);
 void BakeFile_addTarget(BakeFile* self, Target* target);
-void BakeFile_run(BakeFile* bake);
+void BakeFile_run(BakeFile* bake, String* target);
 
 #endif

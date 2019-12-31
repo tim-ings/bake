@@ -6,11 +6,8 @@ SOURCE = $(NAME).c
 BINARY = $(NAME).out
 $(NAME) = this is saved to variable 'try'
 
+build: $(OBJECT)
+	$(CC) $(CARGS) -o $(BINARY) $(OBJECT)
+
 $(OBJECT): $(SOURCE)
 	$(CC) $(CARGS) -c -o $(OBJECT) $(SOURCE)
-
-$(BINARY): $(OBJECT)
-	@echo Building binary
-	-asdasdasdasd
-	@echo Ran a command that failed but we ignored it!
-	$(CC) $(CARGS) -o $(BINARY) $(OBJECT)
