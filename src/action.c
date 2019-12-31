@@ -14,6 +14,7 @@ void Action_free(Action* self) {
 }
 
 int Action_exec(Action* self) {
+    printf("%s\n", self->command->str);
     pid_t pid = fork();
     if (pid == -1) {
         fprintf(stderr, "FATAL: Failed to fork in Action_exec\n");
