@@ -74,6 +74,7 @@ BakeFile* BakeFile_new(char* file_path) {
             String* name = String_copy(((ReMatch*)List_get(matches, 1))->match);
             name = BakeFile_varExpand(bake, name);
             String* deps_str = String_copy(((ReMatch*)List_get(matches, 2))->match);
+            deps_str = BakeFile_varExpand(bake, deps_str);
             List* deps = String_split(deps_str, ' ');
             current_target = Target_new(name, deps);
             
@@ -88,8 +89,7 @@ BakeFile* BakeFile_new(char* file_path) {
         if (matches != NULL) {
             String* command = ((ReMatch*)List_get(matches, 1))->match;
             char mod = 0;
-            switch (command->str[0])
-            {
+            switch (command->str[0]) {
                 case '@': mod = '@'; break;
                 case '-': mod = '-'; break;
             }
@@ -154,16 +154,14 @@ String* BakeFile_getVar(BakeFile* self, String* name) {
     }
 
     // try find and the var in our var list
-    for (int i = 0; i < self->variables->length; i++) {
-        Variable* var = List_get(self->variables, i);
-        if (String_equals(var->name, name)) {
-            return var->value;
-        }
-    }
+    Variable* var = List_find(self->variables, Variable_eq, name);
+    if (var != NULL)
+        return var->value;
 
     // if we didnt find it try find in env
     char* val = getenv(name->str);
-    if (val != NULL) { return String_new(val); }
+    if (val != NULL)
+        return String_new(val);
 
     // finally default to the empty string
     return String_new("");
@@ -174,12 +172,10 @@ void BakeFile_setVar(BakeFile* self, String* name, String* value) {
     value = BakeFile_varExpand(self, value);
 
     // try updating an existing variable
-    for (int i = 0; i < self->variables->length; i++) {
-        Variable* var = List_get(self->variables, i);
-        if (String_equals(var->name, name)) {
-            var->value = value;
-            return;
-        }
+    Variable* existing = List_find(self->variables, Variable_eq, name);
+    if (existing != NULL) {
+        existing->value = value;
+        return;
     }
 
     // set up our new variable
@@ -224,7 +220,6 @@ String* BakeFile_varExpand(BakeFile* self, String* str) {
         String_free(after);
         for (int i = 0; i < matches->length; i++)
             ReMatch_free(List_get(matches, i));
-        List_free(matches);
         matches = String_match(str, &re_varexpansion, 2);
     }
     
@@ -236,12 +231,13 @@ void BakeFile_addTarget(BakeFile* self, Target* target) {
 }
 
 void BakeFile_run(BakeFile* self) {
-    // // rebuild dated targets
-    // for (int ti = 0; ti < self->targets->length; ti++) {
-    //     Target* t = List_get(self->targets, ti);
-    //     printf("Checking target: %s\n", t->name);
-    //     if (Target_isOutDated(t, self->targets)) {
-    //         Target_build(t);
-    //     }
-    // }
+    // rebuild out dated targets
+    for (int ti = 0; ti < self->targets->length; ti++) {
+        Target* t = List_get(self->targets, ti);
+        printf("Checking target: %s\n", t->name->str);
+        if (Target_isOutDated(t, self->targets)) {
+            printf("Target \"%s\" is out dated\n", t->name->str);
+            Target_build(t);
+        }
+    }
 }

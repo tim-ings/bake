@@ -13,3 +13,9 @@ void Variable_free(Variable* self) {
     String_free(self->value);
     free(self);
 }
+
+bool Variable_eq(void* a, void* b) {
+    Variable* var1 = (Variable*)a;
+    String* var2_name = (String*)b;
+    return String_equals(var1->name, var2_name);
+}

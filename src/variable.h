@@ -14,5 +14,6 @@ struct Variable
 
 Variable* Variable_new(String* name, String* value);
 void Variable_free(Variable* self);
+bool Variable_eq(void* a, void* b);
 
 #endif

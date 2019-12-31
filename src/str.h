@@ -25,6 +25,7 @@ void ReMatch_free(ReMatch* self);
 
 String* String_new(char* str);
 void String_free(String* self);
+bool String_eq(void* a, void* b);
 String* String_copy(String* self);
 String* String_from_int(int i);
 String* String_from_float(float f);

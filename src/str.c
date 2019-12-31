@@ -19,6 +19,10 @@ void String_free(String* self){
     free(self);
 }
 
+bool String_eq(void* a, void* b) {
+    return String_equals((String*)a, (String*)b);
+}
+
 String* String_copy(String* self) {
     return String_new(strdup(self->str));
 }

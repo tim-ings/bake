@@ -22,61 +22,78 @@ void Target_free(Target* self) {
     free(self);
 }
 
+bool Target_eq(void* a, void* b) {
+    Target* tar1 = (Target*)a;
+    String* tar2_name = (String*)b;
+    return String_equals(tar1->name, tar2_name);
+}
+
 void Target_addAction(Target* self, Action* action) {
     List_add(self->actions, action);
 }
 
-// TODO: move to bakefile this is ugly
-// bool Target_isOutDated(Target* self, List* others, int others_len) {
-//     // If there are no dependencies, then the target requires rebuilding
-//     if (self->dependecies->length == 0) return true;
+bool Target_isOutDated(Target* self, List* others) {
+    // If there are no dependencies, then the target requires rebuilding
+    if (self->dependecies->length == 0) {
+        printf("Target \"%s\" has no dependencies so requires rebuilding\n", self->name->str);
+        return true;
+    }
 
-//     // If any dependency does not exist, or has been modified more recently 
-//     // than its target, then the target requires rebuilding
+    // If any dependency does not exist, or has been modified more recently 
+    // than its target, then the target requires rebuilding
 
-//     // check every dependency
-//     for (int di = 0; di < self->dependecies->length; di++) {
-//         String* dep = List_get(self->dependecies, di);
+    // check every dependency
+    for (int di = 0; di < self->dependecies->length; di++) {
+        String* dep = List_get(self->dependecies, di);
         
-//         // check if the dependency is another target
-//         for (int ti = 0; ti < others_len; ti++) {
-//             Target* othertar = &others[ti];
-//             if (strcmp(dep, othertar->name) == 0) {
-//                 // if the dependency is outdated this target is outdated
-//                 if (Target_isOutDated(othertar, others, others_len)) return true;
-//             }
-//         }
+        // check if the dependency is another target
+        Target* other = List_find(others, Target_eq, dep);
+        if (other != NULL && Target_isOutDated(other, others)) {
+            printf("Target \"%s\" is dependent on an outdated target \"%s\"\n", self->name->str, other->name->str);
+            return true;
+        }
 
-//         // check if the dependency is a file
-//         struct stat depstats;
-//         struct stat tarstats;
-//         stat(dep, &depstats);
-//         stat(self->name, &tarstats);
-//         printf("File (tar) \"%s\" was last modifed at: %ld\n", self->name, tarstats.st_mtime);
-//         printf("File (dep) \"%s\" was last modifed at: %ld\n", dep, depstats.st_mtime);
-//         if (depstats.st_mtime > tarstats.st_mtime) {
-//             printf("Dep \"%s\" has been modififed, we need to rebuild \"%s\"\n", dep, self->name);
-//             return true;
-//         }
-//         printf("Checking if \"%s\" exists\n", dep);
-//         if (access(dep, F_OK) == -1) {
-//             printf("Dep \"%s\" does not exist, we need to rebuild \"%s\"\n", dep, self->name);
-//             return true;
-//         }
-//         printf("Checking if \"%s\" exists\n", self->name);
-//         if (access(self->name, F_OK) == -1) {
-//             printf("Target \"%s\" does not exist, we need to rebuild \"%s\"\n", self->name, self->name);
-//             return true;
-//         }
+        // check if the target file exists
+        printf("Checking if \"%s\" exists\n", self->name->str);
+        if (access(self->name->str, F_OK) == -1) {
+            printf("Target \"%s\" does not exist, we need to rebuild \"%s\"\n", self->name->str, self->name->str);
+            return true;
+        }
 
-//         printf("Dep \"%s\" is not out dated!\n", dep);
-//     }
+        // check if the dependant file exists
+        printf("Checking if \"%s\" exists\n", dep->str);
+        if (access(dep->str, F_OK) == -1) {
+            printf("Dep \"%s\" does not exist, we need to rebuild \"%s\"\n", dep->str, self->name->str);
+            return true;
+        }
+
+        // check if the dependant file has been modified more recently than the target file
+        struct stat depstats;
+        struct stat tarstats;
+        stat(dep->str, &depstats);
+        stat(self->name->str, &tarstats);
+        printf("Target \"%s\" was last modifed at: %ld\n", self->name->str, tarstats.st_mtime);
+        printf("Dependency \"%s\" was last modifed at: %ld\n", dep->str, depstats.st_mtime);
+        if (depstats.st_mtime > tarstats.st_mtime) {
+            printf("Dependency \"%s\" has been modififed, we need to rebuild \"%s\"\n", dep->str, self->name->str);
+            return true;
+        }
+
+        printf("Dependency \"%s\" is not out dated!\n", dep->str);
+    }
 
 
-//     return false;
-// }
+    return false;
+}
 
-// int Target_build(Target* self) {
-//     printf("Building \"%s\"", self->name);
-//     return 0;
-// }
+int Target_build(Target* self) {
+    printf("\tBuilding \"%s\"\n", self->name->str);
+    // run all actions for this target
+    for (int ai = 0; ai < self->actions->length; ai++) {
+        Action* act = List_get(self->actions, ai);
+        int res = Action_exec(act);
+        return res;
+    }
+    
+    return 0;
+}

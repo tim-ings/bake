@@ -34,3 +34,13 @@ void List_add(List* self, void* obj) {
     }
     self->items[self->length++] = obj;
 }
+
+void* List_find(List* self, eq eq, void* other) {
+    for (int i = 0; i < self->length; i++) {
+        void* si = List_get(self, i);
+        if (eq(si, other)) {
+            return si;
+        }
+    }
+    return NULL;
+}

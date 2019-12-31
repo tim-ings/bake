@@ -1,7 +1,12 @@
 CC = gcc
-CARGS = -std=c99 -Wall -pendantic -Werror
-IN = try.c
-OUT = try.out
+CARGS = -std=c99 -Wall -pedantic -Werror
+NAME = try
+OBJECT = $(NAME).o
+SOURCE = $(NAME).c
+BINARY = $(NAME).out
 
-build:
-	$(CC) $(CARGS) -o $(OUT) $(IN)
+$(OBJECT): $(SOURCE)
+	$(CC) $(CARGS) -c -o $(OBJECT) $(SOURCE)
+
+$(BINARY): $(OBJECT)
+	$(CC) $(CARGS) -o $(BINARY) $(OBJECT)

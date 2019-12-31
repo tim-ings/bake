@@ -20,8 +20,9 @@ struct Target
 
 Target* Target_new(String* name, List* deps);
 void Target_free(Target* self);
+bool Target_eq(void* a, void* b);
 void Target_addAction(Target* self, Action* action);
-// bool Target_isOutDated(Target* self, Target* others, int others_len);
-// int Target_build(Target* self);
+bool Target_isOutDated(Target* self, List* others);
+int Target_build(Target* self);
 
 #endif
