@@ -2,6 +2,11 @@
 
 
 Target* Target_new(String* name, List* deps) {
+    if (!re_url_compiled) {
+        regcomp(&re_url, "^(https://)|(https://)|(file:///)", REG_EXTENDED);
+        re_url_compiled = true;
+    }
+
     Target* t = malloc(sizeof(Target));
     t->name = name;
     t->dependecies = deps;
@@ -32,6 +37,32 @@ void Target_addAction(Target* self, Action* action) {
     List_add(self->actions, action);
 }
 
+long url_modified(String* url) {
+    // set up curl
+    CURL* curl;
+    curl = curl_easy_init();
+    if (curl == NULL) {
+        fprintf(stderr, "FATAL: Failed to init curl in url_modified\n");
+        exit(EXIT_FAILURE);
+    }
+    // ask for file time header only
+    curl_easy_setopt(curl, CURLOPT_URL, url->str);
+    curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+    curl_easy_setopt(curl, CURLOPT_FILETIME, 1L);
+    curl_easy_setopt(curl, CURLOPT_HEADER, 0L);
+
+    CURLcode res;
+    long filetime = -1;
+    res = curl_easy_perform(curl);
+    if (res == CURLE_OK) {
+        res = curl_easy_getinfo(curl, CURLINFO_FILETIME, &filetime);
+        if (res != CURLE_OK || filetime < 0)
+            filetime = -1;
+    }
+    curl_easy_cleanup(curl);
+    return filetime;
+}
+
 bool Target_isOutDated(Target* self, List* others) {
     // If there are no dependencies, then the target requires rebuilding
     if (self->dependecies->length == 0) {
@@ -51,6 +82,25 @@ bool Target_isOutDated(Target* self, List* others) {
             // build the outdated dependency
             Target_build(other);
             return true;
+        }
+
+        // check if the dependency is a url
+        List* matches = String_match(dep, &re_url, 1);
+        if (matches != NULL) {
+            // check if the target file exists
+            if (access(self->name->str, F_OK) != -1) {
+                long modified = url_modified(dep); // get url time modified
+                struct stat tarstats;
+                stat(self->name->str, &tarstats); // get file time modified
+                if (modified > tarstats.st_mtime) {
+                    printf("target is outdated due to URL %ld > %ld\n", modified, tarstats.st_mtime);
+                    return true;
+                }
+            }
+            // free matches
+            for (int i = 0; i < matches->length; i++)
+                ReMatch_free(List_get(matches, i));
+            List_free(matches);
         }
 
         // check if the target file exists

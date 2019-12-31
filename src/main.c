@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <regex.h>
+#include <curl/curl.h>
 
 #include "action.h"
 #include "variable.h"
@@ -70,6 +71,8 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+
     if (clargs.directory != NULL)
         chdir(clargs.directory);
 
@@ -85,6 +88,7 @@ int main(int argc, char** argv) {
         target = String_new(clargs.target);
     BakeFile_run(bake, target);
     
+    curl_global_cleanup();
     BakeFile_free(bake);
     return EXIT_SUCCESS;
 }

@@ -7,12 +7,14 @@ BakeFile* BakeFile_new(char* file_path) {
     bake->targets = List_new();
     bake->default_target = NULL;
 
-    // set up regex here var causes segfaults
-    regcomp(&re_varexpansion, "\\$\\(([^\\(\\) \t]+)\\)", REG_EXTENDED);
-    regcomp(&re_variable, "^([^= \t]+)[ \t]*=[ \t]*(.+)*$", REG_EXTENDED);
-    regcomp(&re_target_nodep, "^([^: \t ]+)[ \t]*:[ \t]*$", REG_EXTENDED);
-    regcomp(&re_target_dep, "^([^: \t ]+)[ \t]*:[ \t]*(.+)$", REG_EXTENDED);
-    regcomp(&re_action, "^[\t](.+)$", REG_EXTENDED);
+    if (!re_compiled) {
+        regcomp(&re_varexpansion, "\\$\\(([^\\(\\) \t]+)\\)", REG_EXTENDED);
+        regcomp(&re_variable, "^([^= \t]+)[ \t]*=[ \t]*(.+)*$", REG_EXTENDED);
+        regcomp(&re_target_nodep, "^([^: \t ]+)[ \t]*:[ \t]*$", REG_EXTENDED);
+        regcomp(&re_target_dep, "^([^: \t ]+)[ \t]*:[ \t]*(.+)$", REG_EXTENDED);
+        regcomp(&re_action, "^[\t](.+)$", REG_EXTENDED);
+        re_compiled = true;
+    }
 
     // parse the bakefile
     // open the file
@@ -256,5 +258,7 @@ void BakeFile_run(BakeFile* self, String* target) {
             if (!clargs.silent) 
                 printf("bake: *** [%s] Error %d\n", t->name->str, res);
         }
+    } else {
+        printf("bake: \"%s\" is up to date.\n", t->name->str);
     }
 }

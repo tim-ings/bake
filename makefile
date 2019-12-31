@@ -1,4 +1,4 @@
 default: build
 
 build:
-	gcc -std=c99 -Werror -Wall -pedantic -lm src/*.c -o bake
+	gcc -std=c99 -Werror -Wall -pedantic -lcurl src/*.c -o bake

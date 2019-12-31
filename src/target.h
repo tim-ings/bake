@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <curl/curl.h>
 
 #include "action.h"
 #include "bool.h"
@@ -18,6 +19,9 @@ struct Target
     List* dependecies;
     List* actions;
 } typedef Target;
+
+static regex_t re_url;
+static bool re_url_compiled = false;
 
 Target* Target_new(String* name, List* deps);
 void Target_free(Target* self);

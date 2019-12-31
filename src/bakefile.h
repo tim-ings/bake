@@ -13,11 +13,12 @@
 #include "bool.h"
 
 
-regex_t re_varexpansion;
-regex_t re_variable;
-regex_t re_target_nodep;
-regex_t re_target_dep;
-regex_t re_action;
+static regex_t re_varexpansion;
+static regex_t re_variable;
+static regex_t re_target_nodep;
+static regex_t re_target_dep;
+static regex_t re_action;
+static bool re_compiled = false;
 
 struct BakeFile
 {
