@@ -75,7 +75,8 @@ int Target_build(Target* self) {
     for (int ai = 0; ai < self->actions->length; ai++) {
         Action* act = List_get(self->actions, ai);
         int res = Action_exec(act);
-        return res;
+        if (res != 0)
+            return res; // stop executing actions if one fails (non-zero)
     }
     return 0;
 }

@@ -87,7 +87,7 @@ BakeFile* BakeFile_new(char* file_path) {
         // check for actions
         matches = String_match(line_str, &re_action, 2);
         if (matches != NULL) {
-            String* command = ((ReMatch*)List_get(matches, 1))->match;
+            String* command = String_copy(((ReMatch*)List_get(matches, 1))->match);
             char mod = 0;
             switch (command->str[0]) {
                 case '@': mod = '@'; break;
@@ -236,7 +236,11 @@ void BakeFile_run(BakeFile* self) {
     for (int ti = 0; ti < self->targets->length; ti++) {
         Target* t = List_get(self->targets, ti);
         if (Target_isOutDated(t, self->targets)) {
-            Target_build(t);
+            int res = Target_build(t);
+            if (res != 0) {
+                printf("bake: *** [%s] Error %d\n", t->name->str, res);
+                return;
+            }
         }
     }
 }
