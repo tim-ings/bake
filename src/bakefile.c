@@ -234,9 +234,7 @@ void BakeFile_run(BakeFile* self) {
     // rebuild out dated targets
     for (int ti = 0; ti < self->targets->length; ti++) {
         Target* t = List_get(self->targets, ti);
-        printf("Checking target: %s\n", t->name->str);
         if (Target_isOutDated(t, self->targets)) {
-            printf("Target \"%s\" is out dated\n", t->name->str);
             Target_build(t);
         }
     }

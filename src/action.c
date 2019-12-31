@@ -14,7 +14,6 @@ void Action_free(Action* self) {
 }
 
 int Action_exec(Action* self) {
-    printf("Executing action: %s\n", self->command->str);
     pid_t pid = fork();
     if (pid == -1) {
         fprintf(stderr, "FATAL: Failed to fork in Action_exec\n");
@@ -22,7 +21,6 @@ int Action_exec(Action* self) {
     }
     if (pid > 0) {
         // parent
-        printf("Waiting for child: %d\n", pid);
         int status;
         if (waitpid(pid, &status, 0) == -1) {
             fprintf(stderr, "waitpid failed in Action_exec\n");
@@ -30,11 +28,9 @@ int Action_exec(Action* self) {
         }
         if (WIFEXITED(status)) { // got an exit code from child
             int child_exit_code = WEXITSTATUS(status);
-            printf("Child exited with code: %d\n", child_exit_code);
             return child_exit_code;
         } else { // did not get an exit code from child
-            printf("Child did not terminate with exit\n");
-            return -1;
+            return EXIT_FAILURE;
         }
     } else if (pid == 0) {
         // child
@@ -44,7 +40,5 @@ int Action_exec(Action* self) {
         execl(shell, shell, "-c", self->command->str, (char*)NULL); // this replaces this child with the shell
         exit(EXIT_FAILURE); // if we get to here execl failed
     }
-
-
-    return 0;
+    return EXIT_FAILURE;
 }

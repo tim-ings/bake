@@ -13,7 +13,7 @@
 int main(int argc, char** argv) {
     // parse the bakefile
     BakeFile* bake = BakeFile_new(NULL);
-    BakeFile_print(bake);
+    //BakeFile_print(bake);
 
     // run the bakefile
     BakeFile_run(bake);
