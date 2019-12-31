@@ -1,4 +1,14 @@
+CC = clang
+CARGS = -Werror -Wall -pedantic
+DARGS = -g -fsanitize=address
+IN = src/*.c
+LIBS = -lcurl
+OUT = bake
+
 default: build
 
+debug:
+	$(CC) $(CARGS) $(DARGS) $(IN) $(LIBS) -o $(OUT)
+
 build:
-	gcc -g -fsanitize=address -std=c99 -Werror -Wall -pedantic src/*.c -lcurl -o bake
+	$(CC) $(CARGS) $(IN) $(LIBS) -o $(OUT)
