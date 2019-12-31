@@ -4,6 +4,7 @@ NAME = try
 OBJECT = $(NAME).o
 SOURCE = $(NAME).c
 BINARY = $(NAME).out
+$(NAME) = this is saved to variable try
 
 $(OBJECT): $(SOURCE)
 	$(CC) $(CARGS) -c -o $(OBJECT) $(SOURCE)

@@ -75,7 +75,6 @@ int Target_build(Target* self) {
     for (int ai = 0; ai < self->actions->length; ai++) {
         Action* act = List_get(self->actions, ai);
         int res = Action_exec(act);
-        printf("Action had result: %d\n", res);
         return res;
     }
     return 0;

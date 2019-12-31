@@ -168,8 +168,9 @@ String* BakeFile_getVar(BakeFile* self, String* name) {
 }
 
 void BakeFile_setVar(BakeFile* self, String* name, String* value) {
-    // expand the value
+    // expand the value and the name
     value = BakeFile_varExpand(self, value);
+    name = BakeFile_varExpand(self, name);
 
     // try updating an existing variable
     Variable* existing = List_find(self->variables, Variable_eq, name);
