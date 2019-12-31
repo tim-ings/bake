@@ -75,7 +75,7 @@ BakeFile* BakeFile_new(char* file_path) {
             name = BakeFile_varExpand(bake, name);
             String* deps_str = String_copy(((ReMatch*)List_get(matches, 2))->match);
             deps_str = BakeFile_varExpand(bake, deps_str);
-            List* deps = String_split(deps_str, ' ');
+            List* deps = String_split(deps_str, " \t\r\n\v\f");
             current_target = Target_new(name, deps);
             
             for (int i = 0; i < matches->length; i++)
@@ -201,7 +201,7 @@ void BakeFile_print(BakeFile* self) {
         Target* t = List_get(self->targets, i);
         printf("\t%s:", t->name->str);
         for (int di = 0; di < t->dependecies->length; di++) {
-            printf("\t %s", ((String*)List_get(t->dependecies, di))->str);
+            printf(" %s,", ((String*)List_get(t->dependecies, di))->str);
         }
         printf("\n");
         for (int ai = 0; ai < t->actions->length; ai++) {

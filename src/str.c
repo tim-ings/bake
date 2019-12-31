@@ -43,13 +43,13 @@ int String_len(String* self) {
     return self->length;
 }
 
-List* String_split(String* self, const char delim) {
+List* String_split(String* self, char* delim) {
     List* tokens = List_new();
     char* s = strdup(self->str);
-    char* tok = strtok(s, &delim);
+    char* tok = strtok(s, delim);
     while (tok != NULL) {
         List_add(tokens, String_new(strdup(tok)));
-        tok = strtok(NULL, &delim);
+        tok = strtok(NULL, delim);
     }
     free(tok);
     free(s);

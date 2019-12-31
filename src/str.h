@@ -30,7 +30,7 @@ String* String_copy(String* self);
 String* String_from_int(int i);
 String* String_from_float(float f);
 int String_len(String* self);
-List* String_split(String* self, char delim);
+List* String_split(String* self, char* delim);
 bool String_equals(String* self, String* other);
 bool String_equals_c(String* self, const char* other);
 List* String_match(String* self, regex_t* pattern, int matchCount);
